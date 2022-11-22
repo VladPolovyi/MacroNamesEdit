@@ -1,0 +1,11 @@
+## Interface: 100000
+## Title: MacroNamesEdit
+## Author: vlad.polovyi@gmail.com
+## Version: 1.0.1
+## Notes: Edits macros for your intervenes
+## SavedVariablesPerCharacter: MacroNamesEditInformation
+
+
+embeds.xml
+Locale\Locales.xml
+MacroNamesEdit.lua
