@@ -19,12 +19,6 @@ local defaultValues_DB = {
 --saved values, loaded by loadData()
 local savedValues_DB = {}
 
---values changed by events
-local internValues_DB = {
-	showChatMessages = false, -- true when 'PLAYER_ENTERING_WORLD' fired or cb Event gets triggered
-	firstLoad = true
-}
-
 local UpdateTable = {}
 
 --*End Variables*
@@ -208,7 +202,7 @@ end
 local function applyEdit()
 	if not InCombatLockdown() then
 		if savedValues_DB.Dps ~= "" and savedValues_DB.Heal ~= "" and savedValues_DB.Macro ~= "" then
-			-- print("apply stuff")
+			-- print("apply stuff")	
 
 			if GetNumGroupMembers() > 0 then
 				-- print("Healer: |cff00ccff" .. name_healer .. "|r Dps: |cff00ccff" .. name_dps .. "|r")
@@ -217,10 +211,20 @@ local function applyEdit()
 
 				local party1role = UnitGroupRolesAssigned("party1")
 				local party2role = UnitGroupRolesAssigned("party2")
-				local name_healer = ""
-				local name_dps = ""
+				local name_healer = nil
+				local name_dps = nil
 
 				if party1name ~= nil then
+					print(party1name)
+				end
+
+				if party2name ~= nil then
+					print(party2name)
+				end
+
+				if party1name ~= nil then
+					print("party1name")
+					print(party1name)
 					if party1role == "DAMAGER" then
 						name_dps = party1name
 					elseif party1role == "HEALER" then
@@ -228,6 +232,8 @@ local function applyEdit()
 					end
 				end
 				if party2name ~= nil then
+					print("party2name")
+					print(party2name)
 					if party2role == "DAMAGER" then
 						name_dps = party2name
 					elseif party2role == "HEALER" then
@@ -235,27 +241,29 @@ local function applyEdit()
 					end
 				end
 
-				-- print(name_dps)
-				-- print(name_healer)
+				-- if name_healer and (name_dps == nil or name_dps == "Unknown") then
+				-- 	if party1role == "TANK" then
+				-- 		name_dps = party1name
+				-- 	elseif party2role == "TANK" then
+				-- 		name_dps = party2name
+				-- 	end
+				-- end
 
-				if name_healer and name_dps == "" then
-					if party1role == "TANK" then
-						name_dps = party1name
-					elseif party2role == "TANK" then
-						name_dps = party2name
-					end
-				end
+				-- if name_dps and (name_healer == nil or name_healer == "Unknown") then
+				-- 	if party1role == "TANK" then
+				-- 		name_healer = party1name
+				-- 	elseif party2role == "TANK" then
+				-- 		name_healer = party2name
+				-- 	end
+				-- end
 
-				if name_dps and name_healer == "" then
-					if party1role == "TANK" then
-						name_healer = party1name
-					elseif party2role == "TANK" then
-						name_healer = party2name
-					end
-				end
 
-				if name_dps ~= nil then
+				print(type(name_dps))
+				print(type(name_healer))
+
+				if name_dps then
 					print("Edited macros |cff00ccff" .. savedValues_DB.Dps .. "|r with name: |cff00ccff" .. name_dps .. "|r")
+
 					local intevene_macro_dps = savedValues_DB.Macro:gsub("NAME", name_dps)
 
 					local macroId = EditMacro(savedValues_DB.Dps, nil, nil, intevene_macro_dps, 1, 1)
@@ -263,8 +271,9 @@ local function applyEdit()
 					print("no dps")
 				end
 
-				if name_healer ~= nil then
+				if name_healer then
 					print("Edited macros |cff00ccff" .. savedValues_DB.Heal .. "|r with name: |cff00ccff" .. name_healer .. "|r")
+
 					local intevene_macro_healer = savedValues_DB.Macro:gsub("NAME", name_healer)
 					local macroId2 = EditMacro(savedValues_DB.Heal, nil, nil, intevene_macro_healer, 1, 1)
 				else
@@ -284,7 +293,6 @@ local function applyButtonEvent()
 		"OnClick",
 		function()
 			if not InCombatLockdown() then
-				internValues_DB.showChatMessages = true
 				savedValues_DB.Dps = InputDps:GetText()
 				savedValues_DB.Heal = InputHeal:GetText()
 				savedValues_DB.Macro = InputMacrosE:GetText()
@@ -310,7 +318,7 @@ local function frameEvent()
 	MacroNameFrame:SetScript(
 		"OnEvent",
 		function(self, event, ...)
-			-- print(event)
+			print(event)
 
 			if event == "PLAYER_LOGOUT" then
 				SaveOptions()
@@ -323,23 +331,17 @@ local function frameEvent()
 
 				applyEdit()
 			elseif event == "GROUP_ROSTER_UPDATE" then
-				-- print("roster?")
+				print("roster?")
 				if not InCombatLockdown() then
 					applyEdit()
 				end
-			elseif
-				(event == "PLAYER_ENTERING_WORLD" and not InCombatLockdown()) or
-					(event == "ARENA_PREP_OPPONENT_SPECIALIZATIONS" and HasLoadedCUFProfiles() and not InCombatLockdown())
-			 then
-				-- print("entering?")
-
-				if internValues_DB.firstLoad then
-					-- print("first load")
-					loadData()
-					updateInputs()
-					internValues_DB.showChatMessages = true
-				-- internValues_DB.firstLoad = false
-				end
+			elseif (event == "PLAYER_ENTERING_WORLD") then
+				print("first load")
+				loadData()
+				updateInputs()
+				applyEdit()
+			elseif (event == "ARENA_PREP_OPPONENT_SPECIALIZATIONS" and not InCombatLockdown()) then
+				print("prep")
 				applyEdit()
 			end
 		end
