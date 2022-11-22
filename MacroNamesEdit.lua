@@ -235,8 +235,8 @@ local function applyEdit()
 					end
 				end
 
-				print(name_dps)
-				print(name_healer)
+				-- print(name_dps)
+				-- print(name_healer)
 
 				if name_healer and name_dps == "" then
 					if party1role == "TANK" then
