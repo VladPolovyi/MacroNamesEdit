@@ -202,83 +202,88 @@ end
 local function applyEdit()
 	if not InCombatLockdown() then
 		if savedValues_DB.Dps ~= "" and savedValues_DB.Heal ~= "" and savedValues_DB.Macro ~= "" then
-			-- print("apply stuff")	
+			-- print("apply stuff")
 
 			if GetNumGroupMembers() > 0 then
 				-- print("Healer: |cff00ccff" .. name_healer .. "|r Dps: |cff00ccff" .. name_dps .. "|r")
-				local party1name = UnitName("party1")
-				local party2name = UnitName("party2")
+				C_Timer.After(
+					5.5,
+					function()
 
-				local party1role = UnitGroupRolesAssigned("party1")
-				local party2role = UnitGroupRolesAssigned("party2")
-				local name_healer = nil
-				local name_dps = nil
+						local party1name = UnitName("party1")
+						local party2name = UnitName("party2")
 
-				if party1name ~= nil then
-					print(party1name)
-				end
+						local party1role = UnitGroupRolesAssigned("party1")
+						local party2role = UnitGroupRolesAssigned("party2")
+						local name_healer = nil
+						local name_dps = nil
 
-				if party2name ~= nil then
-					print(party2name)
-				end
+						-- if party1name ~= nil then
+						-- 	print(party1name)
+						-- end
 
-				if party1name ~= nil then
-					print("party1name")
-					print(party1name)
-					if party1role == "DAMAGER" then
-						name_dps = party1name
-					elseif party1role == "HEALER" then
-						name_healer = party1name
+						-- if party2name ~= nil then
+						-- 	print(party2name)
+						-- end
+
+						if party1name ~= nil and party1name ~= "Unknown" then
+							-- print("party1name")
+							-- print(party1name)
+							if party1role == "DAMAGER" then
+								name_dps = party1name
+							elseif party1role == "HEALER" then
+								name_healer = party1name
+							end
+						end
+						if party2name ~= nil and party2name ~= "Unknown" then
+							-- print("party2name")
+							-- print(party2name)
+							if party2role == "DAMAGER" then
+								name_dps = party2name
+							elseif party2role == "HEALER" then
+								name_healer = party2name
+							end
+						end
+
+						if name_healer and name_dps == nil then
+							if party1role == "TANK" then
+								name_dps = party1name
+							elseif party2role == "TANK" then
+								name_dps = party2name
+							end
+						end
+
+						if name_dps and name_healer == nil then
+							if party1role == "TANK" then
+								name_healer = party1name
+							elseif party2role == "TANK" then
+								name_healer = party2name
+							end
+						end
+
+						-- print(type(name_dps))
+						-- print(type(name_healer))
+
+						if name_dps then
+							print("Edited macros |cff00ccff" .. savedValues_DB.Dps .. "|r with name: |cff00ccff" .. name_dps .. "|r")
+
+							local intevene_macro_dps = savedValues_DB.Macro:gsub("NAME", name_dps)
+
+							local macroId = EditMacro(savedValues_DB.Dps, nil, nil, intevene_macro_dps, 1, 1)
+						else
+							print("no dps")
+						end
+
+						if name_healer then
+							print("Edited macros |cff00ccff" .. savedValues_DB.Heal .. "|r with name: |cff00ccff" .. name_healer .. "|r")
+
+							local intevene_macro_healer = savedValues_DB.Macro:gsub("NAME", name_healer)
+							local macroId2 = EditMacro(savedValues_DB.Heal, nil, nil, intevene_macro_healer, 1, 1)
+						else
+							print("no healer")
+						end
 					end
-				end
-				if party2name ~= nil then
-					print("party2name")
-					print(party2name)
-					if party2role == "DAMAGER" then
-						name_dps = party2name
-					elseif party2role == "HEALER" then
-						name_healer = party2name
-					end
-				end
-
-				-- if name_healer and (name_dps == nil or name_dps == "Unknown") then
-				-- 	if party1role == "TANK" then
-				-- 		name_dps = party1name
-				-- 	elseif party2role == "TANK" then
-				-- 		name_dps = party2name
-				-- 	end
-				-- end
-
-				-- if name_dps and (name_healer == nil or name_healer == "Unknown") then
-				-- 	if party1role == "TANK" then
-				-- 		name_healer = party1name
-				-- 	elseif party2role == "TANK" then
-				-- 		name_healer = party2name
-				-- 	end
-				-- end
-
-
-				print(type(name_dps))
-				print(type(name_healer))
-
-				if name_dps then
-					print("Edited macros |cff00ccff" .. savedValues_DB.Dps .. "|r with name: |cff00ccff" .. name_dps .. "|r")
-
-					local intevene_macro_dps = savedValues_DB.Macro:gsub("NAME", name_dps)
-
-					local macroId = EditMacro(savedValues_DB.Dps, nil, nil, intevene_macro_dps, 1, 1)
-				else
-					print("no dps")
-				end
-
-				if name_healer then
-					print("Edited macros |cff00ccff" .. savedValues_DB.Heal .. "|r with name: |cff00ccff" .. name_healer .. "|r")
-
-					local intevene_macro_healer = savedValues_DB.Macro:gsub("NAME", name_healer)
-					local macroId2 = EditMacro(savedValues_DB.Heal, nil, nil, intevene_macro_healer, 1, 1)
-				else
-					print("no healer")
-				end
+				)
 			else
 				print("|cff00ccffYou are not in party|r")
 			end
@@ -324,24 +329,20 @@ local function frameEvent()
 				SaveOptions()
 				MacroNameFrame:UnregisterEvent(event)
 			elseif event == "PLAYER_REGEN_ENABLED" then
-				-- print("regen?")
 				for frame, _ in pairs(UpdateTable) do
 					UpdateTable[frame] = nil
 				end
 
 				applyEdit()
 			elseif event == "GROUP_ROSTER_UPDATE" then
-				print("roster?")
 				if not InCombatLockdown() then
 					applyEdit()
 				end
 			elseif (event == "PLAYER_ENTERING_WORLD") then
-				print("first load")
 				loadData()
 				updateInputs()
 				applyEdit()
 			elseif (event == "ARENA_PREP_OPPONENT_SPECIALIZATIONS" and not InCombatLockdown()) then
-				print("prep")
 				applyEdit()
 			end
 		end
