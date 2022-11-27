@@ -86,12 +86,9 @@ local function createText()
 	SavedHEAL:SetFontObject("p", "GameFontHighlightMedium")
 	SavedHEAL:SetSize(540, 10)
 
-	-- SavedHEAL:SetSize(string.len(MNE_YourHealMacro .. defaultValues_DB.Heal), 10)
-
 	SavedDPS:SetPoint("TOPLEFT", 20, -240)
 	SavedDPS:SetFontObject("p", "GameFontHighlightMedium")
 	SavedDPS:SetSize(540, 10)
-	-- SavedDPS:SetSize(string.len(MNE_YourDpsMacro .. defaultValues_DB.Dps), 10)
 end
 
 local function createInput()
@@ -123,34 +120,6 @@ local function createInput()
 	InputMacros:SetScrollChild(InputMacrosE)
 	InputMacrosE:SetAutoFocus(false)
 
-	-- InputMacros:SetPoint("TOPLEFT", 15, -300)
-	-- InputMacros:SetSize(570, 150)
-	-- InputMacros:SetAutoFocus(false)
-	-- InputMacros:SetMaxLetters(1000)
-	-- InputMacros:SetFontObject("ChatFontNormal")
-	-- InputMacros:SetMultiLine(true)
-	-- InputMacros:SetTextInsets(50,50,50,50)
-	-- local InputMacroTitle = MacroNameFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-	-- InputMacroTitle:SetText("Macros body")
-	-- InputMacroTitle:SetPoint("TOPLEFT", InputMacros, 0, 20)
-
-	-- InputMacros:SetBackdrop({
-	-- 	bgFile = [[Interface\Buttons\WHITE8x8]],
-	-- 	edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]],
-	-- 	edgeSize = 14,
-	-- 	insets = {left = 3, right = 3, top = 3, bottom = 3},
-	-- })
-	-- InputMacros:SetBackdropColor(0, 0, 0)
-	-- InputMacros:SetBackdropBorderColor(0.3, 0.3, 0.3)
-	-- InputMacros:SetMultiLine(true)
-	-- InputMacros:SetSize(300, 300)
-	-- InputMacros:SetPoint("TOPLEFT", 300, -107)
-	-- InputMacros:SetAutoFocus(false)
-	-- InputMacros:SetText("test")
-	-- InputMacros:SetCursorPosition(0)
-	-- InputMacros:SetFont("Fonts\\FRIZQT__.TTF", 10)
-	-- InputMacros:SetJustifyH("LEFT")
-	-- InputMacros:SetJustifyV("CENTER")
 	ApplyButton:SetPoint("CENTER", 0, -200)
 	ApplyButton:SetSize(140, 40)
 	ApplyButton:SetText("Apply")
@@ -182,6 +151,7 @@ local function SaveOptions()
 			MacroNamesEditInformation[key] = savedValues_DB[key]
 		end
 	end
+	print('information saved')
 end
 
 --*End Creating*
@@ -203,13 +173,15 @@ local function applyEdit()
 	if not InCombatLockdown() then
 		if savedValues_DB.Dps ~= "" and savedValues_DB.Heal ~= "" and savedValues_DB.Macro ~= "" then
 			-- print("apply stuff")
-
-			if GetNumGroupMembers() > 0 then
+			local inInstance, instanceType = IsInInstance()
+			-- print(inInstance)
+			-- print(instanceType)
+			if GetNumGroupMembers() > 0 and instanceType == "arena" then
+			
 				-- print("Healer: |cff00ccff" .. name_healer .. "|r Dps: |cff00ccff" .. name_dps .. "|r")
 				C_Timer.After(
 					5.5,
 					function()
-
 						local party1name = UnitName("party1")
 						local party2name = UnitName("party2")
 
@@ -218,17 +190,7 @@ local function applyEdit()
 						local name_healer = nil
 						local name_dps = nil
 
-						-- if party1name ~= nil then
-						-- 	print(party1name)
-						-- end
-
-						-- if party2name ~= nil then
-						-- 	print(party2name)
-						-- end
-
 						if party1name ~= nil and party1name ~= "Unknown" then
-							-- print("party1name")
-							-- print(party1name)
 							if party1role == "DAMAGER" then
 								name_dps = party1name
 							elseif party1role == "HEALER" then
@@ -236,8 +198,6 @@ local function applyEdit()
 							end
 						end
 						if party2name ~= nil and party2name ~= "Unknown" then
-							-- print("party2name")
-							-- print(party2name)
 							if party2role == "DAMAGER" then
 								name_dps = party2name
 							elseif party2role == "HEALER" then
@@ -265,22 +225,22 @@ local function applyEdit()
 						-- print(type(name_healer))
 
 						if name_dps then
-							print("Edited macros |cff00ccff" .. savedValues_DB.Dps .. "|r with name: |cff00ccff" .. name_dps .. "|r")
+							-- print("Edited macros |cff00ccff" .. savedValues_DB.Dps .. "|r with name: |cff00ccff" .. name_dps .. "|r")
 
 							local intevene_macro_dps = savedValues_DB.Macro:gsub("NAME", name_dps)
 
 							local macroId = EditMacro(savedValues_DB.Dps, nil, nil, intevene_macro_dps, 1, 1)
 						else
-							print("no dps")
+							-- print("no dps")
 						end
 
 						if name_healer then
-							print("Edited macros |cff00ccff" .. savedValues_DB.Heal .. "|r with name: |cff00ccff" .. name_healer .. "|r")
+							-- print("Edited macros |cff00ccff" .. savedValues_DB.Heal .. "|r with name: |cff00ccff" .. name_healer .. "|r")
 
 							local intevene_macro_healer = savedValues_DB.Macro:gsub("NAME", name_healer)
 							local macroId2 = EditMacro(savedValues_DB.Heal, nil, nil, intevene_macro_healer, 1, 1)
 						else
-							print("no healer")
+							-- print("no healer")
 						end
 					end
 				)
@@ -303,7 +263,7 @@ local function applyButtonEvent()
 				savedValues_DB.Macro = InputMacrosE:GetText()
 				SaveOptions()
 				updateInputs()
-				applyEdit()
+				-- applyEdit()
 			else
 				-- if savedValues_DB.ChatMessagesOn then
 				-- end
@@ -323,7 +283,7 @@ local function frameEvent()
 	MacroNameFrame:SetScript(
 		"OnEvent",
 		function(self, event, ...)
-			print(event)
+			-- print(event)
 
 			if event == "PLAYER_LOGOUT" then
 				SaveOptions()
